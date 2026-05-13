@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-13T12:07:01.068432Z",
+  "updated_at": "2026-05-13T08:00:00Z",
   "cohort": "never_bought",
   "rows": [
     { "window": "last_30d", "total_msgs": 5920, "vaccines": 286, "pricing": 258, "barkibu_card": 160, "cancel_freelook": 132, "dental": 58, "signup_app": 134, "id_document": 86, "human_support": 121, "waiting_period": 93, "discount": 122, "price_increase": 65, "sterilization": 59, "liability": 51, "leishmania": 43, "preexisting": 28, "insurer_change": 3, "renewal": 43 },
