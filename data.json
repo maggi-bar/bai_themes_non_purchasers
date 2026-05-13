@@ -1,0 +1,8 @@
+{
+  "updated_at": "2026-05-13T12:07:01.068432Z",
+  "cohort": "never_bought",
+  "rows": [
+    { "window": "last_30d", "total_msgs": 5920, "vaccines": 286, "pricing": 258, "barkibu_card": 160, "cancel_freelook": 132, "dental": 58, "signup_app": 134, "id_document": 86, "human_support": 121, "waiting_period": 93, "discount": 122, "price_increase": 65, "sterilization": 59, "liability": 51, "leishmania": 43, "preexisting": 28, "insurer_change": 3, "renewal": 43 },
+    { "window": "prev_30d", "total_msgs": 4707, "vaccines": 259, "pricing": 238, "barkibu_card": 157, "cancel_freelook": 111, "dental": 51, "signup_app": 87, "id_document": 75, "human_support": 75, "waiting_period": 47, "discount": 96, "price_increase": 32, "sterilization": 52, "liability": 19, "leishmania": 29, "preexisting": 11, "insurer_change": 2, "renewal": 55 }
+  ]
+}

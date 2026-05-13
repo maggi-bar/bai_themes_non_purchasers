@@ -247,7 +247,7 @@ function unwrapMcpResult(res) {
 
 // Baked-in snapshot from 2026-05-12, strict never-bought cohort
 const SNAPSHOT = {
-  asOf: '2026-05-12',
+  asOf: '2026-05-13',
   rows: [
     { window: 'last_30d', total_msgs: 5920, vaccines: 286, pricing: 258, barkibu_card: 160, cancel_freelook: 132, dental: 58, signup_app: 134, id_document: 86, human_support: 121, waiting_period: 93, discount: 122, price_increase: 65, sterilization: 59, liability: 51, leishmania: 43, preexisting: 28, insurer_change: 3, renewal: 43 },
     { window: 'prev_30d', total_msgs: 4707, vaccines: 259, pricing: 238, barkibu_card: 157, cancel_freelook: 111, dental: 51, signup_app: 87, id_document: 75, human_support: 75, waiting_period: 47, discount: 96, price_increase: 32, sterilization: 52, liability: 19, leishmania: 29, preexisting: 11, insurer_change: 2, renewal: 55 }
@@ -255,28 +255,16 @@ const SNAPSHOT = {
 };
 
 async function load() {
-  const liveAvailable = !!(window.cowork && typeof window.cowork.callMcpTool === 'function');
-  if (!liveAvailable) {
-    renderFromRows(SNAPSHOT.rows, 'Snapshot · ' + SNAPSHOT.asOf + ' (open inside Cowork for live data)');
-    return;
-  }
   try {
-    const raw = await window.cowork.callMcpTool(
-      'mcp__2589da4b-9162-424d-881a-7a4e3d0089e4__execute_sql',
-      { sql: SQL_KEYWORDS }
-    );
-    const res = unwrapMcpResult(raw);
-    if (!res) throw new Error('Unrecognised response shape');
-    const rows = res.rows || [];
-    if (rows.length < 2) {
-      const errMsg = res.error || (res.ok === false ? 'SQL error' : null);
-      if (errMsg) throw new Error('Query failed: ' + errMsg);
-      throw new Error('Expected 2 windows, got ' + rows.length);
-    }
-    renderFromRows(rows, 'Refreshed ' + new Date().toLocaleString());
+    const resp = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (!data.rows || data.rows.length < 2) throw new Error('Invalid data shape');
+    const updated = data.updated_at ? new Date(data.updated_at).toLocaleString() : 'unknown time';
+    renderFromRows(data.rows, 'Live · refreshed ' + updated);
   } catch (e) {
-    console.warn('Live fetch failed, falling back to snapshot:', e);
-    renderFromRows(SNAPSHOT.rows, 'Snapshot · ' + SNAPSHOT.asOf + ' (live fetch failed)');
+    console.warn('Failed to fetch live data.json, using baked snapshot:', e);
+    renderFromRows(SNAPSHOT.rows, 'Snapshot · ' + SNAPSHOT.asOf + ' (live data unavailable)');
   }
 }
 
