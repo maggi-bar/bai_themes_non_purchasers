@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pre-Purchase BAI Themes · Never-Bought Cohort</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; margin: 0; padding: 24px; background: #fafafa; color: #1a1a1a; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px 0; }
+.subtitle { color: #666; font-size: 13px; }
+.cohort-badge { display: inline-block; background: #10b981; color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; vertical-align: middle; margin-left: 8px; font-weight: 600; letter-spacing: 0.02em; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 720px) { .kpis { grid-template-columns: 1fr; } }
+.kpi { background: white; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px; }
+.kpi-label { color: #666; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.kpi-value { font-size: 22px; font-weight: 600; line-height: 1.2; }
+.kpi-delta { font-size: 12px; margin-top: 4px; }
+.kpi-delta.up { color: #0a7c47; }
+.kpi-delta.down { color: #b91c1c; }
+.kpi-delta.flat { color: #888; }
+.panel { background: white; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.panel-title { font-size: 14px; font-weight: 600; margin: 0 0 6px 0; }
+.panel-note { color: #777; font-size: 12px; margin: 0 0 16px 0; }
+.chart-wrap { position: relative; height: 520px; }
+canvas { max-height: 520px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+th { color: #666; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; user-select: none; white-space: nowrap; }
+th:hover { color: #1a1a1a; }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.share-bar { display: inline-block; vertical-align: middle; width: 60px; height: 6px; background: #eee; border-radius: 3px; margin-left: 8px; overflow: hidden; }
+.share-bar-fill { height: 100%; background: #10b981; }
+.delta.up { color: #0a7c47; }
+.delta.down { color: #b91c1c; }
+.delta.flat { color: #888; }
+.loading { padding: 40px; text-align: center; color: #888; font-size: 13px; }
+.error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 6px; font-size: 13px; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; font-weight: 500; }
+.footer { color: #888; font-size: 11px; margin-top: 8px; }
+.footer code { background: #f3f3f3; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+.cohort-explain { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #064e3b; }
+.cohort-explain strong { font-weight: 600; }
+tr.theme-row { cursor: pointer; }
+tr.theme-row:hover { background: #f6f9fc; }
+tr.theme-row td:first-child::before { content: '▸'; display: inline-block; color: #aaa; margin-right: 8px; font-size: 10px; transition: transform 0.15s ease; }
+tr.theme-row.expanded td:first-child::before { transform: rotate(90deg); }
+tr.examples-row { background: #f9fafb; }
+tr.examples-row td { padding: 0 12px 12px 36px; border-bottom: 1px solid #eee; }
+.examples-list { list-style: none; padding: 0; margin: 4px 0 0 0; }
+.examples-list li { padding: 8px 12px; margin: 6px 0; background: white; border-left: 3px solid #10b981; border-radius: 0 4px 4px 0; font-size: 12.5px; color: #2a2a2a; line-height: 1.5; }
+.examples-list li:before { content: '"'; color: #ccc; font-size: 18px; vertical-align: -3px; margin-right: 2px; }
+.examples-list li:after { content: '"'; color: #ccc; font-size: 18px; vertical-align: -3px; margin-left: 2px; }
+.examples-empty { color: #999; font-style: italic; padding: 8px 12px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>Pre-Purchase BAI Themes <span class="cohort-badge">Never Bought</span></h1>
+    <div class="subtitle">What genuine leads ask BAI before buying · last 30 days vs. prior 30</div>
+  </div>
+  <div class="subtitle" id="updated"></div>
+</div>
+
+<div class="cohort-explain">
+  <strong>Cohort filter:</strong> tickets where <code>user_status = 'lead'</code> <em>and</em> the requester's email matches a <code>dim_pet_parents</code> record with no live policies, no premium history, and no claims history. This removes existing customers who write in from a different email — what's left is users we know are in our system but have never purchased.
+</div>
+
+<div id="content"><div class="loading">Loading from data warehouse…</div></div>
+
+<div class="footer">
+  Source: <code>mart_cc.fct_tickets</code> joined to <code>mart_bai.fct_bai_events</code> and <code>mart_core.dim_pet_parents</code> for the cohort filter. Keyword-based classification; a single message can match multiple themes.
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script>
+const SQL_KEYWORDS = `
+WITH lead_tickets AS (
+  SELECT t.ticket_id, LOWER(t.user_email) AS email,
+         CASE WHEN t.created_at >= DATEADD(day, -30, CURRENT_DATE) THEN 'last_30d' ELSE 'prev_30d' END AS window
+  FROM dwh.mart_cc.fct_tickets t
+  WHERE t.user_status = 'lead'
+    AND t.created_at >= DATEADD(day, -60, CURRENT_DATE)
+),
+strict_leads AS (
+  SELECT lt.ticket_id, lt.window
+  FROM lead_tickets lt
+  JOIN dwh.mart_core.dim_pet_parents pp ON LOWER(pp.email) = lt.email
+  WHERE pp.live_policies_count IS NULL
+    AND (pp.total_premium_amount IS NULL OR pp.total_premium_amount = 0)
+    AND (pp.total_paid_claims_count IS NULL OR pp.total_paid_claims_count = 0)
+),
+base AS (
+  SELECT sl.window, LOWER(e.user_message::varchar(2000)) AS msg
+  FROM strict_leads sl
+  JOIN dwh.mart_bai.fct_bai_events e ON e.ticket_id = sl.ticket_id
+  WHERE e.event_name = 'ConversationMessageResponded'
+    AND e.user_message IS NOT NULL
+    AND e.event_created_at >= DATEADD(day, -65, CURRENT_DATE)
+)
+SELECT
+  window,
+  COUNT(*) AS total_msgs,
+  SUM(CASE WHEN msg LIKE '%vacuna%' OR msg LIKE '%vacina%' OR msg LIKE '%vaccin%' OR msg LIKE '%impf%' OR msg LIKE '%pentavalente%' THEN 1 ELSE 0 END) AS vaccines,
+  SUM(CASE WHEN msg LIKE '%precio%' OR msg LIKE '%prezzo%' OR msg LIKE '%preço%' OR msg LIKE '%preis%' OR msg LIKE '%cost%' OR msg LIKE '%cuanto cuesta%' OR msg LIKE '%caro%' OR msg LIKE '%teuer%' OR msg LIKE '%cuota%' THEN 1 ELSE 0 END) AS pricing,
+  SUM(CASE WHEN msg LIKE '%tarjeta%' OR msg LIKE '%cartão%' OR msg LIKE '%karte%' OR msg LIKE '%card%' THEN 1 ELSE 0 END) AS barkibu_card,
+  SUM(CASE WHEN msg LIKE '%cancel%' OR msg LIKE '%baja%' OR msg LIKE '%kündig%' OR msg LIKE '%annull%' OR msg LIKE '%14 días%' OR msg LIKE '%desist%' THEN 1 ELSE 0 END) AS cancel_freelook,
+  SUM(CASE WHEN msg LIKE '%dental%' OR msg LIKE '%zahn%' OR msg LIKE '%diente%' THEN 1 ELSE 0 END) AS dental,
+  SUM(CASE WHEN msg LIKE '%no me deja%' OR msg LIKE '%no funciona%' OR msg LIKE '%nicht akzept%' OR msg LIKE '%registr%' OR msg LIKE '%firmar%' OR msg LIKE '%sesión%' OR msg LIKE '%login%' OR msg LIKE '%no se abre%' OR msg LIKE '%error%' THEN 1 ELSE 0 END) AS signup_app,
+  SUM(CASE WHEN msg LIKE '%dni%' OR msg LIKE '%nie%' OR msg LIKE '%ausweisnummer%' OR msg LIKE '%personalausweis%' OR msg LIKE '%identidad%' THEN 1 ELSE 0 END) AS id_document,
+  SUM(CASE WHEN msg LIKE '%telefono%' OR msg LIKE '%telefon%' OR msg LIKE '%llamar%' OR msg LIKE '%anruf%' OR msg LIKE '%phone%' OR msg LIKE '%hablar con%persona%' OR msg LIKE '%agente%' OR msg LIKE '%mitarbeiter%' THEN 1 ELSE 0 END) AS human_support,
+  SUM(CASE WHEN msg LIKE '%carenc%' OR msg LIKE '%wartezeit%' OR msg LIKE '%waiting period%' OR msg LIKE '%periodo di attesa%' THEN 1 ELSE 0 END) AS waiting_period,
+  SUM(CASE WHEN msg LIKE '%descuento%' OR msg LIKE '%sconto%' OR msg LIKE '%rabatt%' OR msg LIKE '%discount%' OR msg LIKE '%coupon%' OR msg LIKE '%gutschein%' OR msg LIKE '%bai25%' THEN 1 ELSE 0 END) AS discount,
+  SUM(CASE WHEN msg LIKE '%subida%' OR msg LIKE '%subido%' OR msg LIKE '%aumento%' OR msg LIKE '%erhöh%' OR msg LIKE '%aumenta%' OR msg LIKE '%más caro%' THEN 1 ELSE 0 END) AS price_increase,
+  SUM(CASE WHEN msg LIKE '%esterili%' OR msg LIKE '%castra%' OR msg LIKE '%kastra%' THEN 1 ELSE 0 END) AS sterilization,
+  SUM(CASE WHEN msg LIKE '%responsabilidad civil%' OR msg LIKE '%responsabilità civile%' OR msg LIKE '%liability%' OR msg LIKE '%haftpflicht%' THEN 1 ELSE 0 END) AS liability,
+  SUM(CASE WHEN msg LIKE '%leishman%' THEN 1 ELSE 0 END) AS leishmania,
+  SUM(CASE WHEN msg LIKE '%preexist%' OR msg LIKE '%pre-exist%' OR msg LIKE '%vorerkrank%' OR msg LIKE '%preesistent%' THEN 1 ELSE 0 END) AS preexisting,
+  SUM(CASE WHEN msg LIKE '%nordic%' OR msg LIKE '%great lakes%' OR msg LIKE '%otra empresa%' OR msg LIKE '%cambia%aseguradora%' THEN 1 ELSE 0 END) AS insurer_change,
+  SUM(CASE WHEN msg LIKE '%renovaci%' OR msg LIKE '%rinnov%' OR msg LIKE '%renewal%' OR msg LIKE '%verlänger%' THEN 1 ELSE 0 END) AS renewal
+FROM base
+GROUP BY window
+ORDER BY window
+`;
+
+const THEMES = [
+  { key: 'vaccines', label: 'Vaccines coverage', examples: [
+    "Good morning. I'm taking the little one to a check-up and I think it's vaccination time. Since this is our first reimbursement request, what do we need to ask the vet for?",
+    "Is the heartworm vaccine covered by the policy?",
+    "Does my insurance cover the multivalent vaccine and kennel cough?"
+  ]},
+  { key: 'pricing', label: 'Pricing / cost', examples: [
+    "Hi, writing to ask whether the €38/month rate I saw for my dog's unlimited policy is locked at that price forever, or whether it goes up over time.",
+    "Why does the ad say €11/month and the email says €19/month?",
+    "How do I find out the annual price of the insurance?"
+  ]},
+  { key: 'barkibu_card', label: 'Barkibu Card', examples: [
+    "Can you tell me if this card has a problem or if it's blocked?",
+    "How do I activate the virtual card?",
+    "What's the daily limit on the Barkibu card?"
+  ]},
+  { key: 'cancel_freelook', label: 'Cancellation (14-day right to withdraw)', examples: [
+    "If I'm within the cooling-off period, will I not be charged anything?",
+    "Hi, I'd like to cancel my insurance — how do I do it?",
+    "Is there a minimum contract length and a notice period if I want to cancel?"
+  ]},
+  { key: 'dental', label: 'Dental coverage', examples: [
+    "Hi — is dental cleaning included?",
+    "Rex needs to have a baby tooth pulled and a dental cleaning. The blood work and the EKG — are those covered?",
+    "And for cats, does it not cover dental diseases either?"
+  ]},
+  { key: 'signup_app', label: 'Signup / app errors', examples: [
+    "I'm trying to sign up but at the payment step I get an error and I can't complete it. I've tried other emails, devices and browsers — same problem.",
+    "I don't get it — I'm creating a new policy from scratch. I enter all the info and when I go to pay it freezes.",
+    "Hi, I can't continue the signup because I can't validate my phone number."
+  ]},
+  { key: 'human_support', label: '"Talk to a human" / phone agent', examples: [
+    "Hi Bai, is there a phone number for your company?",
+    "I'd like to be contacted, preferably in the afternoon. My number is 636631735.",
+    "I'd like to talk to someone in sales — phone agent please."
+  ]},
+  { key: 'waiting_period', label: 'Waiting periods', examples: [
+    "Let me check I understand — if I insure them today, in case of a problem like a luxation, the waiting period before cover kicks in is 6 months?",
+    "Could you clarify what 'waiting period' means? You'd be doing me a favour.",
+    "Are the waiting period requirements waived for any conditions?"
+  ]},
+  { key: 'discount', label: 'Discount / coupon codes', examples: [
+    "I'm signing up — I entered the discount code but it isn't working.",
+    "Are there any promotions for puppies? Another insurer has discounts — thanks in advance!",
+    "I invited a friend to Barkibu but the €25 doesn't show up for either of us. What happened?"
+  ]},
+  { key: 'price_increase', label: 'Price increase complaint', examples: [
+    "I started at €30, then €40, now €52. This is outrageous.",
+    "I always pay around €38 and this time you charged me over €60. Why?",
+    "Given the significant increase from my previous insurer, I wanted to understand how big the annual hike could be."
+  ]},
+  { key: 'id_document', label: 'DNI / NIE / Ausweisnummer', examples: [
+    "Hi Bai, I'm on your homepage entering my details. There's a button that says 'DNI or NIE.' What does that mean? I have to fill it in but don't know what to write.",
+    "Many thanks, but your app isn't accepting my Swiss ID.",
+    "Not at all — my ID number wasn't accepted during registration."
+  ]},
+  { key: 'sterilization', label: 'Sterilization / castration', examples: [
+    "If we want to neuter Zeus and it's been 2 weeks since we took out the policy, would the pre-op blood work be covered?",
+    "Since it said surgeries were covered, I wasn't sure if sterilization was included or not.",
+    "Do you have a package that covers sterilization costs?"
+  ]},
+  { key: 'liability', label: 'Pet liability (third-party)', examples: [
+    "Do you offer third-party liability insurance for dogs?",
+    "Does this cover liability if someone accuses my dog of biting them? And is the policy valid across the EU or only in Portugal?",
+    "I'm thinking about adding the third-party liability (RC) cover — what does it cover and are there deductibles?"
+  ]},
+  { key: 'leishmania', label: 'Leishmania prevention', examples: [
+    "Are the leishmania test and vaccine covered?",
+    "Good afternoon — is the leishmania and heartworm vaccine subsidised?",
+    "Good morning — I got an email saying the insurance doesn't cover the leishmania vaccine."
+  ]},
+  { key: 'preexisting', label: 'Pre-existing conditions', examples: [
+    "What do 'waiting periods' and 'pre-existing' mean?",
+    "Hi Bai, I was doing a quote simulation for my dog and I have a question about pre-existing diseases.",
+    "Are inherited diseases I'm unaware of included in the medical expenses?"
+  ]},
+  { key: 'insurer_change', label: 'Insurer change (Nordic)', examples: [
+    "Almost no mentions in the never-bought cohort — this theme is renewal-driven (existing customers).",
+    "(few examples available in this cohort)",
+    "(few examples available in this cohort)"
+  ]},
+  { key: 'renewal', label: 'Renewal questions', examples: [
+    "Hi — if my policy expires on June 1 but I want to renew it, can I?",
+    "Why am I getting emails asking me to renew my existing contract?",
+    "If I haven't bought yet — can the renewal price be different from the first-year price?"
+  ]},
+];
+
+function fmtNum(n) { return (n == null ? 0 : Number(n)).toLocaleString('en-US'); }
+function fmtPct(n) { if (!isFinite(n)) return '—'; const s = n > 0 ? '+' : ''; return s + (n*100).toFixed(0) + '%'; }
+function deltaClass(n) { if (!isFinite(n)) return 'flat'; if (n > 0.05) return 'up'; if (n < -0.05) return 'down'; return 'flat'; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let sortKey = 'last_30d';
+let sortDesc = true;
+let rowsData = [];
+let totals = { last: 0, prev: 0 };
+let chartInstance = null;
+
+function unwrapMcpResult(res) {
+  if (!res) return null;
+  if (Array.isArray(res.rows)) return res;
+  if (Array.isArray(res.content)) {
+    for (const c of res.content) {
+      if (c && typeof c.text === 'string') {
+        try {
+          const parsed = JSON.parse(c.text);
+          if (Array.isArray(parsed.rows)) return parsed;
+        } catch (_) {}
+      }
+    }
+  }
+  if (typeof res === 'string') {
+    try { const parsed = JSON.parse(res); if (Array.isArray(parsed.rows)) return parsed; } catch (_) {}
+  }
+  if (res.result) return unwrapMcpResult(res.result);
+  if (res.data) return unwrapMcpResult(res.data);
+  return null;
+}
+
+// Baked-in snapshot from 2026-05-12, strict never-bought cohort
+const SNAPSHOT = {
+  asOf: '2026-05-12',
+  rows: [
+    { window: 'last_30d', total_msgs: 5920, vaccines: 286, pricing: 258, barkibu_card: 160, cancel_freelook: 132, dental: 58, signup_app: 134, id_document: 86, human_support: 121, waiting_period: 93, discount: 122, price_increase: 65, sterilization: 59, liability: 51, leishmania: 43, preexisting: 28, insurer_change: 3, renewal: 43 },
+    { window: 'prev_30d', total_msgs: 4707, vaccines: 259, pricing: 238, barkibu_card: 157, cancel_freelook: 111, dental: 51, signup_app: 87, id_document: 75, human_support: 75, waiting_period: 47, discount: 96, price_increase: 32, sterilization: 52, liability: 19, leishmania: 29, preexisting: 11, insurer_change: 2, renewal: 55 }
+  ]
+};
+
+async function load() {
+  const liveAvailable = !!(window.cowork && typeof window.cowork.callMcpTool === 'function');
+  if (!liveAvailable) {
+    renderFromRows(SNAPSHOT.rows, 'Snapshot · ' + SNAPSHOT.asOf + ' (open inside Cowork for live data)');
+    return;
+  }
+  try {
+    const raw = await window.cowork.callMcpTool(
+      'mcp__2589da4b-9162-424d-881a-7a4e3d0089e4__execute_sql',
+      { sql: SQL_KEYWORDS }
+    );
+    const res = unwrapMcpResult(raw);
+    if (!res) throw new Error('Unrecognised response shape');
+    const rows = res.rows || [];
+    if (rows.length < 2) {
+      const errMsg = res.error || (res.ok === false ? 'SQL error' : null);
+      if (errMsg) throw new Error('Query failed: ' + errMsg);
+      throw new Error('Expected 2 windows, got ' + rows.length);
+    }
+    renderFromRows(rows, 'Refreshed ' + new Date().toLocaleString());
+  } catch (e) {
+    console.warn('Live fetch failed, falling back to snapshot:', e);
+    renderFromRows(SNAPSHOT.rows, 'Snapshot · ' + SNAPSHOT.asOf + ' (live fetch failed)');
+  }
+}
+
+function renderFromRows(rows, stamp) {
+  const last = rows.find(r => r.window === 'last_30d');
+  const prev = rows.find(r => r.window === 'prev_30d');
+  if (!last || !prev) {
+    document.getElementById('content').innerHTML = '<div class="error">Failed to load: missing window data</div>';
+    return;
+  }
+  render(last, prev);
+  document.getElementById('updated').textContent = stamp;
+}
+
+function render(last, prev) {
+  totals.last = Number(last.total_msgs) || 0;
+  totals.prev = Number(prev.total_msgs) || 0;
+  const volumeGrowth = totals.prev > 0 ? (totals.last - totals.prev) / totals.prev : 0;
+
+  rowsData = THEMES.map(t => {
+    const lastV = Number(last[t.key]) || 0;
+    const prevV = Number(prev[t.key]) || 0;
+    const lastShare = totals.last > 0 ? lastV / totals.last : 0;
+    const prevShare = totals.prev > 0 ? prevV / totals.prev : 0;
+    const shareChange = prevShare > 0 ? (lastShare - prevShare) / prevShare : (lastV > 0 ? Infinity : 0);
+    const absChange = prevV > 0 ? (lastV - prevV) / prevV : (lastV > 0 ? Infinity : 0);
+    return Object.assign({}, t, { last_30d: lastV, prev_30d: prevV, lastShare, prevShare, shareChange, absChange });
+  });
+
+  const topTheme = [...rowsData].sort((a,b)=>b.last_30d-a.last_30d)[0];
+  const growing = [...rowsData].filter(r => r.last_30d >= 30).sort((a,b) => b.shareChange - a.shareChange)[0];
+
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Never-bought messages · last 30d</div>
+        <div class="kpi-value">${fmtNum(totals.last)}</div>
+        <div class="kpi-delta ${deltaClass(volumeGrowth)}">${fmtPct(volumeGrowth)} vs. prior 30d</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Top theme by volume</div>
+        <div class="kpi-value">${topTheme ? escapeHtml(topTheme.label) : '—'}</div>
+        <div class="kpi-delta flat">${topTheme ? fmtNum(topTheme.last_30d) + ' mentions' : ''}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Fastest-growing theme</div>
+        <div class="kpi-value">${growing ? escapeHtml(growing.label) : '—'}</div>
+        <div class="kpi-delta ${growing ? deltaClass(growing.shareChange) : 'flat'}">${growing ? fmtPct(growing.shareChange) + ' in share of traffic' : ''}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="panel-title">Mentions by theme (keyword classifier)</h2>
+      <div class="panel-note">Number of never-bought user messages containing each theme's keywords. Green = last 30 days, grey = prior 30 days.</div>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2 class="panel-title">Detail (keyword classifier)</h2>
+      <div class="panel-note">Click a row to see real example questions in English. Share Δ = how much the theme's share of pre-purchase traffic shifted vs. the prior 30 days (baseline volume ${fmtPct(volumeGrowth)}).</div>
+      <table id="table">
+        <thead>
+          <tr>
+            <th data-sort="label">Theme</th>
+            <th data-sort="last_30d" class="num">Last 30d</th>
+            <th data-sort="prev_30d" class="num">Prev 30d</th>
+            <th data-sort="absChange" class="num">Volume Δ</th>
+            <th data-sort="shareChange" class="num">Share Δ</th>
+            <th>Share of traffic</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  `;
+  renderTable();
+  renderChart();
+  document.querySelectorAll('#table th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.sort;
+      if (sortKey === k) sortDesc = !sortDesc;
+      else { sortKey = k; sortDesc = (k !== 'label'); }
+      renderTable();
+    });
+  });
+}
+
+function renderTable() {
+  const maxShare = Math.max(...rowsData.map(r => r.lastShare), 0.0001);
+  const sorted = [...rowsData].sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (typeof av === 'string') return sortDesc ? (bv || '').localeCompare(av || '') : (av || '').localeCompare(bv || '');
+    if (!isFinite(av)) av = -Infinity;
+    if (!isFinite(bv)) bv = -Infinity;
+    return sortDesc ? bv - av : av - bv;
+  });
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = sorted.map(r => {
+    const widthPct = (r.lastShare / maxShare * 100).toFixed(1);
+    const examples = (r.examples && r.examples.length)
+      ? `<ul class="examples-list">${r.examples.map(ex => '<li>' + escapeHtml(ex) + '</li>').join('')}</ul>`
+      : `<div class="examples-empty">No example messages saved for this theme.</div>`;
+    return `<tr class="theme-row" data-key="${r.key}">
+      <td>${escapeHtml(r.label)}</td>
+      <td class="num">${fmtNum(r.last_30d)}</td>
+      <td class="num">${fmtNum(r.prev_30d)}</td>
+      <td class="num delta ${deltaClass(r.absChange)}">${fmtPct(r.absChange)}</td>
+      <td class="num delta ${deltaClass(r.shareChange)}">${fmtPct(r.shareChange)}</td>
+      <td>${(r.lastShare*100).toFixed(1)}%<span class="share-bar"><span class="share-bar-fill" style="width:${widthPct}%"></span></span></td>
+    </tr>
+    <tr class="examples-row" data-for="${r.key}" style="display:none;"><td colspan="6"><div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin-top:6px;">Example questions</div>${examples}</td></tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr.theme-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const key = row.dataset.key;
+      const ex = tbody.querySelector('tr.examples-row[data-for="' + key + '"]');
+      if (!ex) return;
+      const isOpen = ex.style.display !== 'none';
+      ex.style.display = isOpen ? 'none' : '';
+      row.classList.toggle('expanded', !isOpen);
+    });
+  });
+}
+
+function renderChart() {
+  const sorted = [...rowsData].sort((a,b) => b.last_30d - a.last_30d);
+  const labels = sorted.map(r => r.label);
+  const lastVals = sorted.map(r => r.last_30d);
+  const prevVals = sorted.map(r => r.prev_30d);
+  const ctx = document.getElementById('chart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Prev 30d', data: prevVals, backgroundColor: '#d1d5db', borderRadius: 3 },
+      { label: 'Last 30d', data: lastVals, backgroundColor: '#10b981', borderRadius: 3 }
+    ]},
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } },
+        tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.x.toLocaleString() + ' mentions' } } },
+      scales: { x: { grid: { color: '#eee' }, ticks: { color: '#666' } }, y: { grid: { display: false }, ticks: { color: '#1a1a1a', font: { size: 12 } } } }
+    }
+  });
+}
+
+
+load();
+</script>
+</body>
+</html>
