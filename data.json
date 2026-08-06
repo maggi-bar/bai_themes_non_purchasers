@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-05T12:15:45Z",
+  "updated_at": "2026-08-06T16:04:59Z",
   "cohort": "never_bought",
   "rows": [
     {
@@ -44,5 +44,64 @@
       "insurer_change": 2,
       "renewal": 61
     }
-  ]
+  ],
+  "alerts": [
+    {
+      "theme": "preexisting",
+      "last_30d": 53,
+      "prev_30d": 27,
+      "pct_change": 96.3,
+      "flag": "urgent"
+    },
+    {
+      "theme": "liability",
+      "last_30d": 55,
+      "prev_30d": 30,
+      "pct_change": 83.3,
+      "flag": "urgent"
+    },
+    {
+      "theme": "id_document",
+      "last_30d": 173,
+      "prev_30d": 106,
+      "pct_change": 63.2,
+      "flag": "urgent"
+    },
+    {
+      "theme": "sterilization",
+      "last_30d": 84,
+      "prev_30d": 53,
+      "pct_change": 58.5,
+      "flag": "risen"
+    },
+    {
+      "theme": "leishmania",
+      "last_30d": 27,
+      "prev_30d": 20,
+      "pct_change": 35.0,
+      "flag": "risen"
+    },
+    {
+      "theme": "price_increase",
+      "last_30d": 76,
+      "prev_30d": 58,
+      "pct_change": 31.0,
+      "flag": "risen"
+    },
+    {
+      "theme": "waiting_period",
+      "last_30d": 85,
+      "prev_30d": 65,
+      "pct_change": 30.8,
+      "flag": "risen"
+    },
+    {
+      "theme": "vaccines",
+      "last_30d": 334,
+      "prev_30d": 276,
+      "pct_change": 21.0,
+      "flag": "urgent"
+    }
+  ],
+  "summary_text": "Message volume from non-buyers rose 8.3% this week, from 5,801 to 6,280. The clearest jumps are preexisting condition questions (+96%, 27 to 53) and liability coverage questions (+83%, 30 to 55), both crossing the urgent threshold, alongside ID document requests which grew by 67 messages (+63%, 106 to 173). Sterilization, Leishmania, price increase, and waiting period questions also rose meaningfully but stayed below the urgent bar."
 }
