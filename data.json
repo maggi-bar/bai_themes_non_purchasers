@@ -1,86 +1,79 @@
 {
-  "updated_at": "2026-08-10T06:31:03Z",
+  "updated_at": "2026-08-24T07:29:29Z",
   "cohort": "never_bought",
   "rows": [
     {
       "window": "last_30d",
-      "total_msgs": 6027,
-      "vaccines": 305,
-      "pricing": 279,
-      "barkibu_card": 178,
-      "cancel_freelook": 150,
-      "dental": 100,
-      "signup_app": 148,
-      "id_document": 171,
-      "human_support": 101,
-      "waiting_period": 80,
-      "discount": 91,
-      "price_increase": 78,
-      "sterilization": 83,
-      "liability": 35,
+      "total_msgs": 6019,
+      "vaccines": 290,
+      "pricing": 313,
+      "barkibu_card": 171,
+      "cancel_freelook": 132,
+      "dental": 121,
+      "signup_app": 140,
+      "id_document": 173,
+      "human_support": 108,
+      "waiting_period": 76,
+      "discount": 93,
+      "price_increase": 88,
+      "sterilization": 114,
+      "liability": 36,
       "leishmania": 29,
-      "preexisting": 54,
-      "insurer_change": 6,
-      "renewal": 63
+      "preexisting": 78,
+      "insurer_change": 1,
+      "renewal": 67
     },
     {
       "window": "prev_30d",
-      "total_msgs": 6105,
-      "vaccines": 309,
-      "pricing": 262,
-      "barkibu_card": 204,
-      "cancel_freelook": 149,
-      "dental": 86,
-      "signup_app": 126,
-      "id_document": 127,
-      "human_support": 91,
-      "waiting_period": 79,
-      "discount": 113,
-      "price_increase": 50,
-      "sterilization": 63,
-      "liability": 48,
-      "leishmania": 23,
-      "preexisting": 38,
-      "insurer_change": 2,
-      "renewal": 52
+      "total_msgs": 6298,
+      "vaccines": 333,
+      "pricing": 264,
+      "barkibu_card": 209,
+      "cancel_freelook": 166,
+      "dental": 99,
+      "signup_app": 167,
+      "id_document": 182,
+      "human_support": 102,
+      "waiting_period": 85,
+      "discount": 96,
+      "price_increase": 61,
+      "sterilization": 74,
+      "liability": 51,
+      "leishmania": 20,
+      "preexisting": 45,
+      "insurer_change": 7,
+      "renewal": 55
     }
   ],
   "alerts": [
     {
-      "theme": "price_increase",
-      "last_30d": 78,
-      "prev_30d": 50,
-      "pct_change": 56.0,
-      "flag": "risen"
-    },
-    {
       "theme": "preexisting",
-      "last_30d": 54,
-      "prev_30d": 38,
-      "pct_change": 42.1,
-      "flag": "risen"
-    },
-    {
-      "theme": "id_document",
-      "last_30d": 171,
-      "prev_30d": 127,
-      "pct_change": 34.6,
+      "last_30d": 78,
+      "prev_30d": 45,
+      "pct_change": 73.3,
       "flag": "risen"
     },
     {
       "theme": "sterilization",
-      "last_30d": 83,
-      "prev_30d": 63,
-      "pct_change": 31.7,
+      "last_30d": 114,
+      "prev_30d": 74,
+      "pct_change": 54.1,
       "flag": "risen"
     },
     {
       "theme": "leishmania",
       "last_30d": 29,
-      "prev_30d": 23,
-      "pct_change": 26.1,
+      "prev_30d": 20,
+      "pct_change": 45.0,
+      "flag": "risen"
+    },
+    {
+      "theme": "price_increase",
+      "last_30d": 88,
+      "prev_30d": 61,
+      "pct_change": 44.3,
       "flag": "risen"
     }
   ],
-  "summary_text": "Pre-purchase BAI message volume was essentially flat this week, with 6,027 messages in the last 30 days versus 6,105 in the prior 30 days (down about 1.3%). The biggest movers were price increase questions, up 56% (50 to 78 messages), pre-existing condition questions, up 42.1% (38 to 54), and ID document questions, up 34.6% (127 to 171). Sterilization and Leishmania questions also rose more modestly, by 31.7% and 26.1% respectively. No themes crossed the urgent threshold this week."
+  "summary_text": "Message volume from non-purchasing leads dipped slightly, down about 4% week-over-week (6,019 messages in the last 30 days vs 6,298 in the prior 30 days). The biggest movers were questions about pre-existing conditions, up 73% (78 vs 45), sterilization, up 54% (114 vs 74), and leishmania, up 45% (29 vs 20). No themes crossed the urgent threshold this week."
 }
